@@ -12,8 +12,10 @@
                 <li class="list-group-item bg-light">
                     <div class="row text-center">
                         <div class="col-lg-4">
-                            <input name="basketID" type="number" class="form-control"
-                                value="{{ basket.quantity }}" min="0">
+                            <label>
+                                <input name="basketID" type="number" class="form-control"
+                                    value="{{ basket.quantity }}" min="0">
+                            </label>
                         </div>
                         <div class="col-lg-4">{{ basket.sum }} руб.</div>
                         <div class="col-lg-4">
