@@ -1,5 +1,4 @@
 from django.db import models
-
 from users.models import User
 
 
@@ -28,7 +27,7 @@ class Product(models.Model):
         related_name='category',
         verbose_name='Категория'
     )
-    
+
     class Meta:
         verbose_name = 'Product'
         verbose_name_plural = 'Products'
