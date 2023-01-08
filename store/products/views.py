@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.shortcuts import redirect
 from django.views.generic import ListView
 from django.views.generic.base import TemplateView
@@ -26,14 +27,20 @@ class ProductsListView(TitleMixin, ListView):
             if category_id else queryset
         )
 
+# пример реализация кэша во вью
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(ProductsListView, self).get_context_data()
-        context['categories'] = ProductCategory.objects.all()
+        categories = cache.get('categories')
+        if not categories:
+            context['categories'] = ProductCategory.objects.all()
+            cache.set('categories', context['categories'], 20)
+        else:
+            context['categories'] = categories
         return context
 
 
 @login_required
-def basket_add(request, product_id):
+def basket_add(request, product_id, quantity=1):
     product = Product.objects.get(id=product_id)
     baskets = Basket.objects.filter(user=request.user, product=product)
 
@@ -41,7 +48,7 @@ def basket_add(request, product_id):
         Basket.objects.create(
             user=request.user,
             product=product,
-            quantity=1
+            quantity=quantity
         )
     else:
         basket = baskets.first()

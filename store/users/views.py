@@ -54,11 +54,17 @@ class EmailVerificationView(TitleMixin, TemplateView):
         # достаем юзера по мылу (уникальное поле)
         user = User.objects.get(email=kwargs['email'])
         # из модели получаем нужный объект
-        email_verification = EmailVerification.objects.filter(user=user, code=code)
+        email_verification = EmailVerification.objects.filter(
+            user=user,
+            code=code
+        )
         # если объект существует и код не устарел (2 суток) сохраняем изменения
         # булевая переменная переходит в статус True
-        if email_verification.exists() and email_verification.first().is_expired():
+        if email_verification.exists()\
+                and not email_verification.first().is_expired():
             user.is_verified_email = True
             user.save()
-            return super(EmailVerificationView, self).get(request, *args, **kwargs)
+            return super(
+                EmailVerificationView, self
+            ).get(request, *args, **kwargs)
         return redirect(reverse('index'))

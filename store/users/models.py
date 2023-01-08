@@ -34,7 +34,7 @@ class EmailVerification(models.Model):
             verification_link
         )
         # отправляем сообщение с сформированным эндпоинтом,
-        # кликнув по ней, вступить контроллер
+        # кликнув по ней, отработает контроллер
         send_mail(
             subject=subject,
             message=message,

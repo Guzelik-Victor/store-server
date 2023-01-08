@@ -16,6 +16,7 @@ class ProductAdmin(admin.ModelAdmin):
         # вложенный кортеж, позволяет выводить нужные поля на одной строке
         ('price', 'quantity'),
         'image',
+        'stripe_product_price_id',
         'category'
     )
     # поиск по полю
