@@ -3,6 +3,7 @@
 
 {% block css %}
     <link href="{% static 'vendor/css/products.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/css/button.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %} 
@@ -13,7 +14,7 @@
 
             <div class="col-lg-3">
 
-                <h1 class="my-4"> Store - Каталог</h1>
+                <h2 class="my-4"> Store - Каталог</h2>
                 <div class="list-group">
                     {% for category in categories %}
                             <a href="{% url 'products:category' category.id %}" class="list-group-item"> {{ category.name }} </a>
@@ -53,36 +54,50 @@
                 </div>
                 
                 <div class="row">
-
-                    {% for product in object_list %}
+                    {% for product in product_list %}
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100">
-                            <a href="#">
+                            <a href="{% url 'products:product_detail' product.id %}">
                                 <img class="card-img-top"
-                                    src="{{ product.image.url }}"
-                                    alt="">
+                                     {% with product.image.all|first as first_object %}
+                                            src="{{ first_object.image.url }}"
+                                            alt="">
+                                        {% if not first_object %}
+                                           <img class="card-img-top" width="200" height="290"
+                                                src="{% static 'vendor/img/products/121_original.jpg' %}"
+                                                alt="">
+                                        {% endif %}
+                                    {% endwith %}
                             </a>
                             <div class="card-body">
                                 <h4 class="card-title">
-                                    <a href="#"> {{ product.name }} </a>
+                                    <a href="{% url 'products:product_detail' product.id %}"> {{ product.name }} </a>
                                 </h4>
                                 <h5> {{ product.price|intcomma }} руб. </h5>
                                 <p class="card-text"> {{ product.description }} </p>
                             </div>
-                            <div class="card-footer text-center">
-                                <a class="btn btn-outline-success" href="{% url 'products:basket_add' product.id %}">
-                                    Отправить в корзину
-                                </a>
-                            </div>
+                            <div class="form-inline">
+                                <form id="form_add_basket" class="form-group" action="{% url 'products:basket_add' product.id %}" method="post">
+                                    {% csrf_token %}
+
+                                    <input type="number" min="0" max="{{ product.quantity }}"  value="1" class="form-control" name="quantity" style="width: 74px">
+
+                                    <button type="submit" class="btn btn-outline-success" style="width: 181px">
+                                        Отправить в корзину
+                                    </button>
+                                 </form>
+                             </div>
                         </div>
                     </div>
                     {% endfor %}
-                    {% include "paginator.html"%}
+                    {% include "includes/paginator.html"%}
+                </div>
             </div>
+        </div>
     </div>
     <!-- /.container -->
 {% endblock %}
 
 {% block footer %}
-    {% include "footer.html" %}
+    {% include "includes/footer.html" %}
 {% endblock %}

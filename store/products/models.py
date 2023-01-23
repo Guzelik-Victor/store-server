@@ -2,7 +2,9 @@ import stripe
 from _decimal import Decimal
 from django.conf import settings
 from django.db import models
+
 from users.models import User
+
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -22,10 +24,8 @@ class ProductCategory(models.Model):
 class Product(models.Model):
     name = models.CharField('Наименование', max_length=256)
     description = models.TextField('Описание')
-    # max_digits - исправить
-    price = models.DecimalField('Цена', max_digits=6, decimal_places=2)
+    price = models.DecimalField('Цена', max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField('Количество', default=0)
-    image = models.ImageField('Изображение', upload_to='products_images')
     stripe_product_price_id = models.CharField(
         max_length=128, null=True, blank=True
     )
@@ -39,6 +39,7 @@ class Product(models.Model):
     class Meta:
         verbose_name = 'Product'
         verbose_name_plural = 'Products'
+        ordering = ('-quantity',)
 
     def __str__(self) -> str:
         return f'Продукт: {self.name} | Категория: {self.category.name}'
@@ -64,6 +65,18 @@ class Product(models.Model):
             currency='rub'
         )
         return stripe_product_price
+
+
+class Image(models.Model):
+    product = models.ForeignKey(
+        'Product',
+        on_delete=models.CASCADE,
+        related_name='image'
+    )
+    image = models.ImageField('Изображение', upload_to='products_images')
+
+    def __str__(self) -> str:
+        return f'Изображение товара: {self.product.name}'
 
 
 # расширяем метод QuerySet, добавляя к его методам нужные нам
@@ -99,7 +112,9 @@ class Basket(models.Model):
         related_name='product',
         verbose_name='товар'
     )
-    quantity = models.PositiveSmallIntegerField('Количество', default=0)
+    quantity = models.PositiveSmallIntegerField(
+        'Количество',
+        default=0,)
     created_timestamp = models.DateTimeField(auto_now_add=True)
 
     # переопределяем менеджер для обращений к классу баскет
@@ -110,6 +125,7 @@ class Basket(models.Model):
     class Meta:
         verbose_name = 'product'
         verbose_name_plural = 'products'
+        ordering = ['created_timestamp']
 
     def __str__(self) -> str:
         return f'Корзина: {self.user.username} | Продукт: {self.product.name}'

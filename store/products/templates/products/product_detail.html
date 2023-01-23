@@ -1,0 +1,84 @@
+{% extends 'products/base.html' %}
+{% load static humanize thumbnail%}
+
+{% block css %}
+    <link href="{% static 'vendor/css/products.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <!-- Page Content -->
+<div class="container">
+    <div class="row">
+            <div class="col-lg-7 col-md-6 mb-6">
+                <div id="carouselExampleIndicators" class="carousel slide carousel-fade my-4" data-ride="carousel">
+                    <ol class="carousel-indicators">
+                        {% with image|length as range %}
+                        {% include 'includes/indicators.html' %}
+                    </ol>
+                    <div class="carousel-inner" role="listbox">
+                        {% if not image %}
+                            <img class="card-img-top" height="500"
+                                 src=" {% static 'vendor/img/products/отсутствует.png' %}"
+                                 alt="">
+                        {% endif %}
+                        {% for img in image %}
+                            {% if forloop.first %}
+                                <div class="carousel-item active">
+                                <img height="850" src="{{ img.image.url }}">
+                                </div>
+                            {% else %}
+                                <div class="carousel-item">
+                                <img height="850" src="{{ img.image.url }}">
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if range > 1 %}
+                    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                        <i style="font-size: 30px; color: #17a2b8" class="fas fa-chevron-left"></i>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                        <i style="font-size: 30px; color: #17a2b8"  class="fas fa-chevron-right" ></i>
+                        <span class="sr-only">Next</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+                 <div class="col-lg-5 col-md-6 mb-6">
+                            <div class="card-body">
+                                <h4 class="card-title">
+                                     <b> {{ product.name }} </b>
+                                </h4>
+                                <h5> <b><i> Цена за ед.: </i></b> {{ product.price|intcomma }} руб. </h5>
+                                <p class="card-text"> <h5> <b><i> Описание: </i></b> <br>  {{ product.description }} </h5> </p>
+                                <p class="card-text"> <h5> <b><i> Количество товара на складе: </i></b>  {{ product.quantity }} ед.</h5> </p>
+                                {% if messages  %}
+                                    <div class="alert alert-info
+                                    alert-dismissible fade show" role="alert" style="margin-top: 50px;">
+                                    {% for message in messages %}
+                                        {% if forloop.first %}
+                                        {{ message|safe }}
+                                        {% endif %}
+                                    {% endfor %}
+                                    </div>
+                                    {% endif %}
+                            </div>
+                            <div class="form-inline">
+                                <form id="form_add_basket"  action="{% url 'products:basket_add' product.id %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="number" min="0" max="{{ product.quantity }}"  class="form-control" value="1"  name="quantity" style="width: 220px">
+                                    <button type="submit" class="btn btn-info" style="width: 220px">
+                                        Отправить в корзину
+                                    </button>
+                                 </form>
+                             </div>
+                 </div>
+    </div>
+</div>
+    <!-- /.container -->
+    {% endwith %}
+{% endblock %}
+
+
+

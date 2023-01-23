@@ -1,11 +1,15 @@
+
+from django.contrib.messages import get_messages
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
-from django.shortcuts import redirect
-from django.views.generic import ListView
+from django.contrib import messages
+from django.shortcuts import redirect, get_object_or_404
+from django.views.generic import ListView, DetailView
 from django.views.generic.base import TemplateView
+from django.urls import reverse
 
 from .common.views import TitleMixin
-from .models import Basket, Product, ProductCategory
+from .models import Basket, Product, ProductCategory, Image
 
 
 class IndexView(TitleMixin, TemplateView):
@@ -13,14 +17,31 @@ class IndexView(TitleMixin, TemplateView):
     title = 'Store'
 
 
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'products/product_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(ProductDetailView, self).get_context_data(**kwargs)
+        context['title'] = f'Store - {self.object.name}'
+        image = cache.get(f'image {self.object.id}')
+        if not image:
+            context['image'] = Image.objects.filter(product_id=self.object.id)
+            cache.set(f'image {self.object.id}', context['image'], 30)
+        else:
+            context['image'] = image
+        return context
+
+
 class ProductsListView(TitleMixin, ListView):
     model = Product
     template_name = 'products/products.html'
-    paginate_by = 3
+    paginate_by = 6
     title = 'Store - Каталог'
 
     def get_queryset(self):
         queryset = super(ProductsListView, self).get_queryset()
+        queryset = queryset.prefetch_related('image')
         category_id = self.kwargs.get('category_id')
         return (
             queryset.filter(category_id=category_id)
@@ -40,10 +61,22 @@ class ProductsListView(TitleMixin, ListView):
 
 
 @login_required
-def basket_add(request, product_id, quantity=1):
+def basket_add(request, product_id):
+
     product = Product.objects.get(id=product_id)
     baskets = Basket.objects.filter(user=request.user, product=product)
+    quantity = int(request.POST['quantity'])
 
+    # найти вариант решения (может полноценно через модел форм)
+    # форма для валидации
+    #form = QuantityForm(request.POST)
+    #form.data = form.data.copy()
+    #form.data['product_id'] = int(product.id)
+
+    #form.data._mutable = True
+    #form.data['product_id'] = product.id
+    #form.data._mutable = False
+    # if form.is_valid():
     if not baskets.exists():
         Basket.objects.create(
             user=request.user,
@@ -52,7 +85,33 @@ def basket_add(request, product_id, quantity=1):
         )
     else:
         basket = baskets.first()
-        basket.quantity += 1
+        if basket.quantity + quantity <= product.quantity:
+            basket.quantity += quantity
+            basket.save()
+        else:
+            messages.info(
+                request,
+                f'Недопустимое количество товара.<br>'
+                f'В корзине {basket.quantity} ед. указанного товара.<br>'
+                f'Всего товара на складе: {product.quantity} ед.<br>'
+                f'Можно добавить {product.quantity-basket.quantity} ед.'
+
+            )
+            return redirect(
+                reverse('products:product_detail', kwargs={'pk': product.id})
+            )
+    return redirect(request.META['HTTP_REFERER'])
+
+
+@login_required
+def basket_update(request, product_id):
+    product = Product.objects.get(id=product_id)
+    basket = get_object_or_404(Basket, user=request.user, product=product)
+    quantity = request.POST['quantity']
+    if not quantity:
+        basket.delete()
+    else:
+        basket.quantity = int(quantity)
         basket.save()
 
     return redirect(request.META['HTTP_REFERER'])
@@ -60,6 +119,6 @@ def basket_add(request, product_id, quantity=1):
 
 @login_required
 def basket_remove(request, basket_id):
-    basket = Basket.objects.get(id=basket_id)
+    basket = get_object_or_404(Basket, id=basket_id)
     basket.delete()
     return redirect(request.META['HTTP_REFERER'])
