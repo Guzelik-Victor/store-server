@@ -42,10 +42,14 @@ INSTALLED_APPS = [
 
     'debug_toolbar',
     'sorl.thumbnail',
+    'rest_framework',
+    'rest_framework.authtoken',
 
     'products.apps.ProductsConfig',
     'users.apps.UsersConfig',
     'orders.apps.OrdersConfig',
+    'core.apps.CoreConfig',
+    'api.apps.ApiConfig',
 
 ]
 
@@ -138,6 +142,24 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# DRF
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 3,
+}
+
+
+
+
+
+
+
+
 
 
 # Internationalization

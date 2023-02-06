@@ -1,5 +1,4 @@
 
-from django.contrib.messages import get_messages
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.contrib import messages
@@ -8,11 +7,12 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.base import TemplateView
 from django.urls import reverse
 
-from .common.views import TitleMixin
-from .models import Basket, Product, ProductCategory, Image
+from products.common.views import TitleMixin
+from products.models import Basket, Product, ProductCategory, Image
 
 
 class IndexView(TitleMixin, TemplateView):
+    a = 1
     template_name = 'products/index.html'
     title = 'Store'
 
@@ -41,7 +41,7 @@ class ProductsListView(TitleMixin, ListView):
 
     def get_queryset(self):
         queryset = super(ProductsListView, self).get_queryset()
-        queryset = queryset.prefetch_related('image')
+        queryset = queryset.prefetch_related('images')
         category_id = self.kwargs.get('category_id')
         return (
             queryset.filter(category_id=category_id)
@@ -58,6 +58,7 @@ class ProductsListView(TitleMixin, ListView):
         else:
             context['categories'] = categories
         return context
+
 
 
 @login_required

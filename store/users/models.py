@@ -30,11 +30,12 @@ class EmailVerification(models.Model):
         )
         verification_link = f'{settings.DOMAIN_NAME}{link}'
         subject = f'Подтверждение учетной записи для {self.user.username}'
-        message = 'Для подтверждения учетной записи перейдите по ссылку: {}'.format(
-            verification_link
-        )
-        # отправляем сообщение с сформированным эндпоинтом,
-        # кликнув по ней, отработает контроллер
+        message = 'Для подтверждения учетной записи перейдите по ссылку: {}'\
+            .format(
+                verification_link
+            )
+        # отправляем сообщение с сформированной ссылкой,
+        # перейдя по ней, отработает контроллер
         send_mail(
             subject=subject,
             message=message,

@@ -59,7 +59,7 @@
                         <div class="card h-100">
                             <a href="{% url 'products:product_detail' product.id %}">
                                 <img class="card-img-top"
-                                     {% with product.image.all|first as first_object %}
+                                     {% with product.images.all|first as first_object %}
                                             src="{{ first_object.image.url }}"
                                             alt="">
                                         {% if not first_object %}
@@ -80,7 +80,7 @@
                                 <form id="form_add_basket" class="form-group" action="{% url 'products:basket_add' product.id %}" method="post">
                                     {% csrf_token %}
 
-                                    <input type="number" min="0" max="{{ product.quantity }}"  value="1" class="form-control" name="quantity" style="width: 74px">
+                                    <input type="number" min="1" max="{{ product.quantity }}"  value="1" class="form-control" name="quantity" style="width: 74px">
 
                                     <button type="submit" class="btn btn-outline-success" style="width: 181px">
                                         Отправить в корзину

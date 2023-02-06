@@ -67,7 +67,7 @@
                             <div class="form-inline">
                                 <form id="form_add_basket"  action="{% url 'products:basket_add' product.id %}" method="post">
                                     {% csrf_token %}
-                                    <input type="number" min="0" max="{{ product.quantity }}"  class="form-control" value="1"  name="quantity" style="width: 220px">
+                                    <input type="number" min="1" max="{{ product.quantity }}"  class="form-control" value="1"  name="quantity" style="width: 220px">
                                     <button type="submit" class="btn btn-info" style="width: 220px">
                                         Отправить в корзину
                                     </button>

@@ -7,7 +7,7 @@ from django.utils.timezone import now
 from .models import EmailVerification, User
 
 
-# отправку письма для авторизации вынесели в таску для селеру
+# отправку письма для авторизации вынесели в таску для селери
 @shared_task
 def send_email_verification(user_id):
     user = User.objects.get(id=user_id)

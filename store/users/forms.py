@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import (AuthenticationForm, UserChangeForm,
-                                       UserCreationForm)
+                                       UserCreationForm, PasswordResetForm, SetPasswordForm)
 
 from .models import User
 from .tasks import send_email_verification
@@ -131,3 +131,43 @@ class UserProfileForm(UserChangeForm):
             'username',
             'email'
         )
+
+
+class UserPasswordResetForm(PasswordResetForm):
+    email = forms.CharField(
+        help_text='Забыли пароль? Введите свой адрес электронной почты,'
+                  ' и мы вышлем вам инструкцию, как установить новый пароль.',
+        widget=forms.EmailInput(
+            attrs={
+                'class': 'form-control py-4',
+                'autocomplete': 'email',
+                'placeholder': 'Введите адрес электронной почты',
+            }
+        ),
+
+    )
+
+
+class UserSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput(
+            attrs={
+                'autocomplete': 'new-password',
+                'class': 'form-control py-4',
+                'placeholder': 'Введите пароль',
+            }
+        ),
+        strip=False,
+    )
+    new_password2 = forms.CharField(
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={
+                'autocomplete': 'new-password',
+                'class': 'form-control py-4',
+                'placeholder': 'Введите пароль повторно',
+            }
+        ),
+    )
+
+

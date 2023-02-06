@@ -1,6 +1,9 @@
 import stripe
 from _decimal import Decimal
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from django.db import models
 
 from users.models import User
@@ -71,12 +74,12 @@ class Image(models.Model):
     product = models.ForeignKey(
         'Product',
         on_delete=models.CASCADE,
-        related_name='image'
+        related_name='images'
     )
     image = models.ImageField('Изображение', upload_to='products_images')
 
     def __str__(self) -> str:
-        return f'Изображение товара: {self.product.name}'
+        return self.image.url
 
 
 # расширяем метод QuerySet, добавляя к его методам нужные нам
@@ -114,7 +117,7 @@ class Basket(models.Model):
     )
     quantity = models.PositiveSmallIntegerField(
         'Количество',
-        default=0,)
+        default=0)
     created_timestamp = models.DateTimeField(auto_now_add=True)
 
     # переопределяем менеджер для обращений к классу баскет
@@ -130,8 +133,8 @@ class Basket(models.Model):
     def __str__(self) -> str:
         return f'Корзина: {self.user.username} | Продукт: {self.product.name}'
 
-    def sum(self) -> Decimal:
-        return self.product.price * self.quantity
+    def sum(self):
+        return float(self.product.price) * self.quantity
 
     def de_json(self):
         basket_item = {

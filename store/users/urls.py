@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LogoutView
+from django.contrib.auth.views import LogoutView, PasswordResetDoneView
 from django.urls import path
 
+
 from .views import (EmailVerificationView, UserLoginView, UserProfileView,
-                    UserRegistrationView)
+                    UserRegistrationView, UserPasswordResetView, UserPasswordResetConfirmView, UserPasswordChange)
 
 app_name = 'users'
 
@@ -21,5 +22,27 @@ urlpatterns = [
         'verify/<str:email>/<uuid:code>/',
         EmailVerificationView.as_view(),
         name='verify_email'
+    ),
+    path(
+        'password_reset/',
+        UserPasswordResetView.as_view(),
+        name='password_reset'
+    ),
+    path(
+        'password_reset/done/',
+        PasswordResetDoneView.as_view(
+            template_name='users/password_reset_email_done.html'
+        ),
+        name='password_reset_email'
+    ),
+    path(
+        'reset/<uidb64>/<token>/',
+        UserPasswordResetConfirmView.as_view(),
+        name='password_reset_confirm'
+    ),
+    path(
+        'password_change',
+        UserPasswordChange.as_view(),
+        name='password_change'
     ),
 ]

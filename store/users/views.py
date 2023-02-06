@@ -1,11 +1,16 @@
-from django.contrib.auth.views import LoginView
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, TemplateView, UpdateView
+from django.contrib.auth.views import LoginView, PasswordResetView, PasswordResetConfirmView, PasswordChangeView
 from products.common.views import TitleMixin
+from django.contrib import messages
 
-from .forms import UserLoginForm, UserProfileForm, UserRegistrationForm
+from django.conf import settings
+
+
+from .forms import UserLoginForm, UserProfileForm, UserRegistrationForm, UserPasswordResetForm, UserSetPasswordForm
 from .models import EmailVerification, User
 
 
@@ -68,3 +73,48 @@ class EmailVerificationView(TitleMixin, TemplateView):
                 EmailVerificationView, self
             ).get(request, *args, **kwargs)
         return redirect(reverse('index'))
+
+
+class UserPasswordResetView(PasswordResetView):
+    form_class = UserPasswordResetForm
+    title = "Store - восстановление пароля"
+    template_name = 'users/password_reset_form.html'
+    email_template_name = 'users/password_reset_email.html'
+    success_url = reverse_lazy('users:password_reset_email')
+    from_email = settings.EMAIL_HOST_USER
+
+
+class UserPasswordResetConfirmView(
+    SuccessMessageMixin, PasswordResetConfirmView
+):
+    title = "Store - смена пароля"
+    template_name = 'users/password_reset_confirm.html'
+    form_class = UserSetPasswordForm
+    success_url = reverse_lazy('users:login')
+    success_message = 'Ваш пароль был сохранен. Теперь вы можете войти.'
+
+
+class UserPasswordChange(SuccessMessageMixin, PasswordChangeView):
+    template_name = 'users/profile.html'
+    success_message = 'Ваш пароль изменен'
+
+    def form_invalid(self, form):
+        """If the form is invalid, render the invalid form."""
+        messages.error(self.request, 'Ваш пароль НЕ изменен.<br>'
+                                     'При изменении пароля руководствуйтесь инструкцией в форме.')
+        return redirect(reverse('users:profile', args=(self.request.user.id,)))
+
+    def get_success_url(self):
+        return reverse_lazy('users:profile', args=(self.request.user.id,))
+
+
+
+
+
+
+
+
+
+
+
+
